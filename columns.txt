@@ -1,0 +1,18 @@
+ #   Column              Non-Null Count  Dtype  
+---  ------              --------------  -----  
+ 0   Date                76000 non-null  str    
+ 1   Store ID            76000 non-null  str    
+ 2   Product ID          76000 non-null  str    
+ 3   Category            76000 non-null  str    
+ 4   Region              76000 non-null  str    
+ 5   Inventory Level     76000 non-null  int64  
+ 6   Units Sold          76000 non-null  int64  
+ 7   Units Ordered       76000 non-null  int64  
+ 8   Price               76000 non-null  float64
+ 9   Discount            76000 non-null  int64  
+ 10  Weather Condition   76000 non-null  str    
+ 11  Promotion           76000 non-null  int64  
+ 12  Competitor Pricing  76000 non-null  float64
+ 13  Seasonality         76000 non-null  str    
+ 14  Epidemic            76000 non-null  int64  
+ 15  Demand              76000 non-null  int64  

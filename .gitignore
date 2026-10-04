@@ -1,0 +1,38 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Virtual environment
+.venv/
+venv/
+env/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Environment
+.env
+
+# MLflow
+mlruns/
+
+# Generated data
+data/processed/
+
+# Generated artifacts
+artifacts/*.joblib
+artifacts/*.pkl
+artifacts/*.pickle
+artifacts/test_predictions.csv
+
+# DVC cache
+.dvc/cache/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
