@@ -1,0 +1,50 @@
+schema: '2.0'
+stages:
+  features:
+    cmd: python -m src.features.build_features
+    deps:
+    - path: data/raw/sales_data.csv
+      hash: md5
+      md5: 43161d2044f30cb4bc7e4e8f749f9aa9
+      size: 6346402
+    - path: src/data/load_data.py
+      hash: md5
+      md5: c8bda54ec77bb9670015ba81b21c2b92
+      size: 1349
+    - path: src/features/build_features.py
+      hash: md5
+      md5: 9f6018dfad5cc589f2cf3add8f860576
+      size: 5250
+    outs:
+    - path: data/processed/model_data.csv
+      hash: md5
+      md5: ba342b85f3ba712af456e9d0e10f6902
+      size: 19645584
+  train:
+    cmd: python -m src.models.train
+    deps:
+    - path: data/processed/model_data.csv
+      hash: md5
+      md5: ba342b85f3ba712af456e9d0e10f6902
+      size: 19645584
+    - path: src/evaluation/evaluate.py
+      hash: md5
+      md5: b1e7bf793825b9298901d8ce4df2ab6f
+      size: 1106
+    - path: src/models/baseline.py
+      hash: md5
+      md5: 4cf639ee03cd264eeb323d31ea50d487
+      size: 1709
+    - path: src/models/train.py
+      hash: md5
+      md5: 4e722cd5bf9701536fe035848b6d6b6e
+      size: 11138
+    outs:
+    - path: artifacts/demand_forecasting_model.joblib
+      hash: md5
+      md5: 319935a448ac6f2990c09e00a811d16f
+      size: 1414583
+    - path: artifacts/test_predictions.csv
+      hash: md5
+      md5: 02d42678a2c667ab021f57961ff9829f
+      size: 421116
