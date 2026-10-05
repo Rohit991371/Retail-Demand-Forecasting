@@ -15,6 +15,12 @@ from xgboost import XGBRegressor
 from src.evaluation.evaluate import evaluate_predictions, print_metrics
 from src.models.baseline import evaluate_baselines
 
+import mlflow
+
+from src.models.mlflow_utils import (
+    setup_mlflow,
+    log_model_run,
+)
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 
@@ -96,19 +102,19 @@ def time_based_split(df):
 
     print(
         f"Train:      {train_df['Date'].min().date()} "
-        f"→ {train_df['Date'].max().date()} "
+        f"-> {train_df['Date'].max().date()} "
         f"({len(train_df):,} rows)"
     )
 
     print(
         f"Validation: {validation_df['Date'].min().date()} "
-        f"→ {validation_df['Date'].max().date()} "
+        f"-> {validation_df['Date'].max().date()} "
         f"({len(validation_df):,} rows)"
     )
 
     print(
         f"Test:       {test_df['Date'].min().date()} "
-        f"→ {test_df['Date'].max().date()} "
+        f"-> {test_df['Date'].max().date()} "
         f"({len(test_df):,} rows)"
     )
 
@@ -325,6 +331,8 @@ def main():
         ),
     }
 
+    setup_mlflow()
+
     trained_models = {}
     validation_results = {}
 
@@ -342,36 +350,51 @@ def main():
             y_train,
         )
 
-        metrics = evaluate_model(
+        validation_metrics = evaluate_model(
             f"{name} - Validation",
             pipeline,
             X_validation,
             y_validation,
         )
 
+        params = model.get_params()
+
+        # Store model and validation result
         trained_models[name] = pipeline
-        validation_results[name] = metrics
+        validation_results[name] = validation_metrics
+
+        # ----------------------------------------------------------
+        # MLflow experiment tracking
+        #
+        # At this stage we log validation performance.
+        # Test performance is intentionally NOT logged yet.
+        # ----------------------------------------------------------
+
+        log_model_run(
+            model_name=name,
+            model=pipeline,
+            params=params,
+            validation_metrics=validation_metrics,
+            test_metrics=None,
+        )
 
     # --------------------------------------------------------------
-    # 8. Select model using validation MAE
+    # 8. Select best model using validation MAE
     # --------------------------------------------------------------
 
     best_model_name = min(
         validation_results,
-        key=lambda name:
-        validation_results[name]["MAE"]
+        key=lambda name: validation_results[name]["MAE"]
     )
 
-    best_model = trained_models[
-        best_model_name
-    ]
+    best_model = trained_models[best_model_name]
 
-    print(
-        f"\nSelected model: {best_model_name}"
-    )
+    print(f"\nSelected model: {best_model_name}")
 
     # --------------------------------------------------------------
     # 9. Final test evaluation
+    #
+    # The test set is used ONLY ONCE, after model selection.
     # --------------------------------------------------------------
 
     test_metrics = evaluate_model(
@@ -379,6 +402,14 @@ def main():
         best_model,
         X_test,
         y_test,
+    )
+
+    log_model_run(
+        model_name=f"{best_model_name} - Final",
+        model=best_model,
+        params=best_model.named_steps["model"].get_params(),
+        validation_metrics=validation_results[best_model_name],
+        test_metrics=test_metrics,
     )
 
     # --------------------------------------------------------------
@@ -439,7 +470,12 @@ def main():
         f"Test predictions saved to: {prediction_path}"
     )
 
+    # --------------------------------------------------------------
+    # 12. Final test metrics
+    # --------------------------------------------------------------
+
     print("\nFinal test metrics:")
+
     for metric, value in test_metrics.items():
         print(
             f"{metric}: {value:.4f}"
