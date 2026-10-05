@@ -19,6 +19,7 @@ mlruns/
 
 # Generated data
 data/processed/
+# data/raw/
 
 # Generated artifacts
 artifacts/*.joblib
