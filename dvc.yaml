@@ -1,0 +1,21 @@
+stages:
+
+  features:
+    cmd: python src/features/build_features.py
+    deps:
+      - src/features/build_features.py
+      - src/data/load_data.py
+      - data/raw/sales_data.csv
+    outs:
+      - data/processed/model_data.csv
+
+  train:
+    cmd: python src/models/train.py
+    deps:
+      - src/models/train.py
+      - src/models/baseline.py
+      - src/models/evaluation.py
+      - data/processed/model_data.csv
+    outs:
+      - artifacts/demand_forecasting_model.joblib
+      - artifacts/test_predictions.csv
